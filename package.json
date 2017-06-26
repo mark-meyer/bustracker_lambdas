@@ -7,7 +7,7 @@
     "clean": "rimraf ./dist",
     "lint": "eslint \"src/**/*.js\"",
     "test": "mocha  --throw-deprecation --compilers js:babel-core/register --require babel-polyfill \"src/*/test/test.js\"",
-    "postinstall": "find ./src/* -name package.json -maxdepth 1 -execdir npm install \\;"
+    "postinstall": "find ./src/* -name package.json -maxdepth 1 -execdir npm install --unsafe-perm \\;"
   },
   "repository": {
     "type": "git",
