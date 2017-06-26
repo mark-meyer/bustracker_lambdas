@@ -6,7 +6,7 @@
     "build": "webpack",
     "clean": "rimraf ./dist",
     "lint": "eslint \"src/**/*.js\"",
-    "test": "mocha --recursive --throw-deprecation --compilers js:babel-core/register --require babel-polyfill \"src/*/test/test.js\"",
+    "test": "mocha  --throw-deprecation --compilers js:babel-core/register --require babel-polyfill \"src/*/test/test.js\"",
     "postinstall": "find ./src/* -name package.json -maxdepth 1 -execdir npm install \\;"
   },
   "repository": {

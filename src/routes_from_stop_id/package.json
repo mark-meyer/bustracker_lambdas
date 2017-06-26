@@ -1,7 +1,7 @@
 {
-  "name": "lambda-stops_from_id",
+  "name": "lambda-routes_from_stop_id",
   "version": "1.0.0",
-  "description": "",
+  "description": "Given a stop number return the ETA of the next bus(es) at that stop. Meant for Lex fulfilment.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
