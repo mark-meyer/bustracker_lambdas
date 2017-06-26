@@ -4,7 +4,7 @@
 */
 module.exports = {
     "Where_are_stop_numbers": [
-        "Stop numbers are printed on the bus stop signs. You can also send me the nearest cross streets or address and I'll send you stops that are within a mile."
+        "The stop numbers are printed on the bus stop signs. You can also send me the nearest cross streets or address and I'll send you stops that are within a mile."
         ],
     "hello":[
         "Hi! To get started, send me a bus stop number.", 
