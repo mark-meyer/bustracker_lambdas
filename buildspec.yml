@@ -21,3 +21,4 @@ artifacts:
   type: zip
   files:
     - dist/*/*.zip
+  discard-paths: yes
