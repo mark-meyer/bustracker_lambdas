@@ -1,0 +1,53 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Lambda Functions to Provide Bus Tracker API
+Resources:
+  conversation:
+    Properties:
+      CodeUri: s3://mark-lambda-test-ul/a5b68f3f285fa8e08224eb33999ce5a7
+      Description: 'Provides responses for Lex '
+      Handler: index.handler
+      MemorySize: 128
+      Role: arn:aws:iam::086642646227:role/service-role/LambdaRole
+      Runtime: nodejs6.10
+      Timeout: 3
+    Type: AWS::Serverless::Function
+  js_endpoint:
+    Properties:
+      CodeUri: s3://mark-lambda-test-ul/1cc8086736401ba10134f7bf4dbfef7f
+      Description: Web hook for bus bot
+      Events:
+        GetResource:
+          Properties:
+            Method: Post
+            Path: /find/{query}
+          Type: Api
+      Handler: index.handler
+      MemorySize: 128
+      Role: arn:aws:iam::086642646227:role/Run_Lex
+      Runtime: nodejs6.10
+      Timeout: 5
+    Type: AWS::Serverless::Function
+  routes_from_stop_id:
+    Properties:
+      CodeUri: s3://mark-lambda-test-ul/651da346baf5924a1456fdbbb57cc856
+      Description: Returns Bus Times from Stop ID
+      Handler: index.handler
+      MemorySize: 128
+      Role: arn:aws:iam::086642646227:role/service-role/LambdaRole
+      Runtime: nodejs6.10
+      Timeout: 3
+    Type: AWS::Serverless::Function
+  stops_near_location:
+    Properties:
+      CodeUri: s3://mark-lambda-test-ul/d4e250a749942fb2f80c38046f4f83c1
+      Description: Find Bus Stops Given an address
+      Environment:
+        Variables:
+          GOOGLE_MAPS_KEY: AIzaSyBm-fjV3flb-_BYwIzR5CwrcIHzbtxJgxc
+      Handler: index.handler
+      MemorySize: 128
+      Role: arn:aws:iam::086642646227:role/service-role/LambdaRole
+      Runtime: nodejs6.10
+      Timeout: 3
+    Type: AWS::Serverless::Function
+Transform: AWS::Serverless-2016-10-31

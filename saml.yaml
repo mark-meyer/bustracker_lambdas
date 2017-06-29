@@ -1,0 +1,53 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Description: Lambda Functions to Provide Bus Tracker API
+Resources:
+  routes_from_stop_id:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      CodeUri: ./src/routes_from_stop_id/
+      Handler: index.handler
+      Runtime: nodejs6.10
+      Description: Returns Bus Times from Stop ID
+      MemorySize: 128
+      Timeout: 3
+      Role: 'arn:aws:iam::086642646227:role/service-role/LambdaRole'
+  stops_near_location:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      CodeUri: ./src/stops_near_location/
+      Handler: index.handler
+      Runtime: nodejs6.10
+      Description: Find Bus Stops Given an address
+      MemorySize: 128
+      Timeout: 3
+      Role: 'arn:aws:iam::086642646227:role/service-role/LambdaRole'
+      Environment:
+        Variables:
+          GOOGLE_MAPS_KEY: AIzaSyBm-fjV3flb-_BYwIzR5CwrcIHzbtxJgxc
+  js_endpoint:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      CodeUri: ./src/js_endpoint/
+      Handler: index.handler
+      Runtime: nodejs6.10
+      Description: Web hook for bus bot
+      MemorySize: 128
+      Timeout: 5
+      Role: 'arn:aws:iam::086642646227:role/Run_Lex'
+      Events:
+        GetResource:
+          Type: Api
+          Properties:
+            Path: /find/{query}
+            Method: Post
+  conversation:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      CodeUri: ./src/conversation/
+      Handler: index.handler
+      Runtime: nodejs6.10
+      Description: 'Provides responses for Lex '
+      MemorySize: 128
+      Timeout: 3
+      Role: 'arn:aws:iam::086642646227:role/service-role/LambdaRole'
