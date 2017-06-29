@@ -20,7 +20,7 @@ exports.handler = (event, context, callback) => {
     // SHandler for API Gateway requests from HTML frontend
     // Accepts a 'query' parameter and returns data.
 
-    var query = event.query
+    var query = event.body.query
 
      if (!query){
         console.log("no query")
