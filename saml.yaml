@@ -39,7 +39,7 @@ Resources:
         GetResource:
           Type: Api
           Properties:
-            Path: /find/
+            Path: /find
             Method: Post
   conversation:
     Type: 'AWS::Serverless::Function'
