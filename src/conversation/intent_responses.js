@@ -1,13 +1,13 @@
 // Try to keep responses under 160 characters so Twilio doesn't need to send concatonated responses, which cost more
 /*
-    This module provides a mapping of intent to response for aws lex chat bot. 
+    This module provides a mapping of intent to response for aws lex chat bot.
 */
 module.exports = {
     "Where_are_stop_numbers": [
-        "The stop numbers are printed on the bus stop signs. You can also send me the nearest cross streets or address and I'll send you stops that are within a mile."
+        "Stop numbers are printed on the bus stop signs. You can also send me the nearest cross streets or address and I'll send you stops that are within a mile."
         ],
     "hello":[
-        "Hi! To get started, send me a bus stop number.", 
+        "Hi! To get started, send me a bus stop number.",
         "Hello There! If you want to know when the next bus is coming, send me a stop number.",
         "Uvlulluataq! If you want to know when the bus is coming, send me a stop number.", //Iñupiaq
         "Waqaa!, Send me a bus stop number and I'll tell you when the bus is coming."
@@ -22,7 +22,7 @@ module.exports = {
         "Näkemiin! (That's how they say goodbye in Finland)",
         ],
     "thanks":[
-        "You're welcome.", 
+        "You're welcome.",
         "No problem, thanks for using the bus tracker.",
         "No problem, always here if you need anything else."
         ],
