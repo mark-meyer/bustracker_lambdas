@@ -2,7 +2,7 @@ AWSTemplateFormatVersion: '2010-09-09'
 Transform: 'AWS::Serverless-2016-10-31'
 Description: Lambda Functions to Provide Bus Tracker API
 Resources:
-  routes_from_stop_id:
+  routesFromStopDd:
     Type: 'AWS::Serverless::Function'
     Properties:
       CodeUri: ./src/routes_from_stop_id/
@@ -12,7 +12,7 @@ Resources:
       MemorySize: 128
       Timeout: 3
       Role: 'arn:aws:iam::086642646227:role/service-role/LambdaRole'
-  stops_near_location:
+  stopsNearLocation:
     Type: 'AWS::Serverless::Function'
     Properties:
       CodeUri: ./src/stops_near_location/
@@ -25,7 +25,7 @@ Resources:
       Environment:
         Variables:
           GOOGLE_MAPS_KEY: AIzaSyBm-fjV3flb-_BYwIzR5CwrcIHzbtxJgxc
-  js_endpoint:
+  jsEndpoint:
     Type: 'AWS::Serverless::Function'
     Properties:
       CodeUri: ./src/js_endpoint/
