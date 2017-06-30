@@ -12,13 +12,16 @@ if (credentials.accessKeyId) {
     AWS.config.update({region: 'us-east-1'});
 }
 
-var lexruntime = new AWS.LexRuntime({
-    apiVersion: '2016-11-28',
-})
+
 
 exports.handler = (event, context, callback) => {
-    // Handler for API Gateway requests from HTML frontend
+    /* Handler for API Gateway requests from HTML frontend
     // Accepts a 'query' POST parameter and returns data.
+    */
+
+    var lexruntime = new AWS.LexRuntime({ // This needs to be initialized here for test mocks to work
+        apiVersion: '2016-11-28',
+    })
     var body = JSON.parse(event.body)
     var query = body.query
     if (!query){
@@ -44,10 +47,11 @@ exports.handler = (event, context, callback) => {
                                 // Where the request originated from
         }
     }
-    console.log("about to call lexruntime with params: ", params)
     lexruntime.postText(params, (err, data) => {
-        console.log("in lex runtime callback")
-        if (err) console.log(err, err.stack)
+        if (err) {
+            console.error(err, err.stack);
+            callback(err. err.stack)
+        }
         else callback(null, makeResponse(data));
     })
 };
