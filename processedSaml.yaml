@@ -1,9 +1,9 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Lambda Functions to Provide Bus Tracker API
+Description: Creates Lambda Functions to Provide Bus Tracker API
 Resources:
   conversation:
     Properties:
-      CodeUri: s3://mark-lambda-test-ul/a5b68f3f285fa8e08224eb33999ce5a7
+      CodeUri: s3://mark-lambda-test-ul/00f4173086d9f98d653d7b5152d523d3
       Description: 'Provides responses for Lex '
       Handler: index.handler
       MemorySize: 128
@@ -11,15 +11,15 @@ Resources:
       Runtime: nodejs6.10
       Timeout: 3
     Type: AWS::Serverless::Function
-  js_endpoint:
+  jsEndpoint:
     Properties:
-      CodeUri: s3://mark-lambda-test-ul/1cc8086736401ba10134f7bf4dbfef7f
+      CodeUri: s3://mark-lambda-test-ul/1dad8e5f2c87abb3a3f4301ace8eca04
       Description: Web hook for bus bot
       Events:
         GetResource:
           Properties:
             Method: Post
-            Path: /find/{query}
+            Path: /find
           Type: Api
       Handler: index.handler
       MemorySize: 128
@@ -27,9 +27,9 @@ Resources:
       Runtime: nodejs6.10
       Timeout: 5
     Type: AWS::Serverless::Function
-  routes_from_stop_id:
+  routesFromStopDd:
     Properties:
-      CodeUri: s3://mark-lambda-test-ul/651da346baf5924a1456fdbbb57cc856
+      CodeUri: s3://mark-lambda-test-ul/15f6cd95ebcaf24ac25a5fb529b7a9b8
       Description: Returns Bus Times from Stop ID
       Handler: index.handler
       MemorySize: 128
@@ -37,9 +37,9 @@ Resources:
       Runtime: nodejs6.10
       Timeout: 3
     Type: AWS::Serverless::Function
-  stops_near_location:
+  stopsNearLocation:
     Properties:
-      CodeUri: s3://mark-lambda-test-ul/d4e250a749942fb2f80c38046f4f83c1
+      CodeUri: s3://mark-lambda-test-ul/89a5f9e7ea5cbb5b6d77bcbbf716cf08
       Description: Find Bus Stops Given an address
       Environment:
         Variables:

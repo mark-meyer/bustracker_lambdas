@@ -21,7 +21,6 @@ exports.handler = (event, context, callback) => {
     // Accepts a 'query' POST parameter and returns data.
     var body = JSON.parse(event.body)
     var query = body.query
-    console.log("event: ", event)
     if (!query){
         console.log("no query")
         callback(null, makeResponse("Please enter a stop number"))
@@ -45,8 +44,9 @@ exports.handler = (event, context, callback) => {
                                 // Where the request originated from
         }
     }
-
+    console.log("about to call lexruntime with params: ", params)
     lexruntime.postText(params, (err, data) => {
+        console.log("in lex runtime callback")
         if (err) console.log(err, err.stack)
         else callback(null, makeResponse(data));
     })

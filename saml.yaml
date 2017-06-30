@@ -5,7 +5,7 @@ Resources:
   routesFromStopDd:
     Type: 'AWS::Serverless::Function'
     Properties:
-      CodeUri: ./src/routes_from_stop_id/
+      CodeUri: ./dist/routes_from_stop_id.zip
       Handler: index.handler
       Runtime: nodejs6.10
       Description: Returns Bus Times from Stop ID
@@ -15,7 +15,7 @@ Resources:
   stopsNearLocation:
     Type: 'AWS::Serverless::Function'
     Properties:
-      CodeUri: ./src/stops_near_location/
+      CodeUri: ./dist/stops_near_location.zip
       Handler: index.handler
       Runtime: nodejs6.10
       Description: Find Bus Stops Given an address
@@ -28,7 +28,7 @@ Resources:
   jsEndpoint:
     Type: 'AWS::Serverless::Function'
     Properties:
-      CodeUri: ./src/js_endpoint/
+      CodeUri: ./dist/js_endpoint.zip
       Handler: index.handler
       Runtime: nodejs6.10
       Description: Web hook for bus bot
@@ -44,7 +44,7 @@ Resources:
   conversation:
     Type: 'AWS::Serverless::Function'
     Properties:
-      CodeUri: ./src/conversation/
+      CodeUri: ./dist/conversation.zip
       Handler: index.handler
       Runtime: nodejs6.10
       Description: 'Provides responses for Lex '

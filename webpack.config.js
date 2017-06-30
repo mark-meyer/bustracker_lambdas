@@ -43,7 +43,7 @@ module.exports = function (env) {
             },
             plugins: [
                 new ZipPlugin({
-                    path: path.join(__dirname, 'dist', fxn),
+                    path: path.join(__dirname, 'dist'),
                     pathPrefix: '',
                     filename: `${fxn}.zip`
                 })

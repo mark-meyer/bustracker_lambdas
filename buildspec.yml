@@ -9,21 +9,14 @@ phases:
       - echo In pre_build step. Nothing to do.
   build:
     commands:
-      #- npm run build
+      - npm run build
       - aws cloudformation package
         --template-file saml.yaml
         --s3-bucket mark-lambda-test-ul
         --output-template-file processedSaml.yaml
-  post_build:
-    commands:
-      # env var BUILD_ARTIFACT_BUCKET is defined in ci.yaml
-      #- aws cloudformation package
-      #   --template-file infrastructure/sam.yaml
-      #   --s3-bucket $BUILD_ARTIFACT_BUCKET
-      #   --output-template-file SamDeploymentTemplate.yaml
+
 artifacts:
   type: zip
   files:
     - processedSaml.yaml
-    #- dist/*/*.zip
   discard-paths: yes
