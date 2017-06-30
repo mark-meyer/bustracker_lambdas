@@ -106,7 +106,10 @@ function parseBusData(body, stopId) {
     parsed.stopId = stopId;
 
     var regex = /<div class='(routeName|departure)'>([^<]+)<\/div>/g
-    var stopsAndTimes = []
+    var stopsAndTimes = [];
+
+    var matches;
+
     while (matches = regex.exec(body)) {
         stopsAndTimes.push(matches[2]);
     }
