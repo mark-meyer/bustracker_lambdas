@@ -48,7 +48,7 @@ exports.handler = (event, context, callback) => {
 
     lexruntime.postText(params, (err, data) => {
         if (err) console.log(err, err.stack)
-        else callback(null, makeResponse(data);
+        else callback(null, makeResponse(data));
     })
 };
 
