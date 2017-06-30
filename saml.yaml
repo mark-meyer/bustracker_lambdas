@@ -24,7 +24,7 @@ Resources:
       Role: 'arn:aws:iam::086642646227:role/service-role/LambdaRole'
       Environment:
         Variables:
-          GOOGLE_MAPS_KEY: $GOOGLE_MAPS_KEY
+          GOOGLE_MAPS_KEY: !ref GOOGLE_MAPS_KEY
   jsEndpoint:
     Type: 'AWS::Serverless::Function'
     Properties:
