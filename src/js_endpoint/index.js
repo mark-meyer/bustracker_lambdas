@@ -17,12 +17,12 @@ var lexruntime = new AWS.LexRuntime({
 })
 
 exports.handler = (event, context, callback) => {
-    // SHandler for API Gateway requests from HTML frontend
-    // Accepts a 'query' parameter and returns data.
-
-    var query = event.body.query
-
-     if (!query){
+    // Handler for API Gateway requests from HTML frontend
+    // Accepts a 'query' POST parameter and returns data.
+    var body = JSON.parse(event.body)
+    var query = body.query
+    console.log("event: ", event)
+    if (!query){
         console.log("no query")
         callback(null, makeResponse("Please enter a stop number"))
         return
@@ -48,7 +48,7 @@ exports.handler = (event, context, callback) => {
 
     lexruntime.postText(params, (err, data) => {
         if (err) console.log(err, err.stack)
-        else callback(null, data);
+        else callback(null, makeResponse(data);
     })
 };
 
