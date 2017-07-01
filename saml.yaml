@@ -2,7 +2,7 @@ AWSTemplateFormatVersion: '2010-09-09'
 Transform: 'AWS::Serverless-2016-10-31'
 Description: Creates Lambda Functions to Provide Bus Tracker API
 Parameters:
-  GOOGLEMAPSKEY: none
+  GOOGLEMAPSKEY: 'none'
 Resources:
   routesFromStopDd:
     Type: 'AWS::Serverless::Function'
