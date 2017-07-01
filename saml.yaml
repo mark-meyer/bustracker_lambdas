@@ -4,7 +4,7 @@ Description: Creates Lambda Functions to Provide Bus Tracker API
 Parameters:
   GOOGLEMAPSKEY:
     Type: String
-    Default: ''
+    Default: '' #Define with Cloudformation Override
 Resources:
   routesFromStopDd:
     Type: 'AWS::Serverless::Function'
