@@ -1,3 +1,4 @@
+var http = require('http');
 var config = require('./config')
 var stop_number_lookup = require('./stop_number_lookup')
 var routeNamesToRouteNumbers = require('./routename_to_routenumber');
@@ -23,115 +24,127 @@ if (credentials.accessKeyId) {
 // Can LEX call a different Handler than the API Gateway?
 
 exports.handler = (event, context, callback) => {
-    /* Handler for API Gateway requests from HTML frontend
-    /  Accepts a 'query' POST parameter and returns data.
-    */
-
     if (event.bot){
-        /* from LEX */
+        /* from LEX
+           Lex recieved a request like 'I am at stop 1066'
+           that we can't catch on our own. It should have
+           extracted the stop into a slot and passed it seperately.
+        */
         var stopId = event.currentIntent.slots['stop']
-        getStopFromStopNumber(stopId)
+        return getStopFromStopNumber(stopId)
         .then((data) => callback(null, makeLexAction(data)))
         .catch((err) => callback(null, makeLexError(err)) )
-        return
     }
     else if (event.body){
-        /* from API Gateway */
+        /*  From API Gateway
+            This could be a simple stop number, which we will respond directly to
+            Or it could be a query that we don't know how to handle, which
+            will be sent to Lex and we'll send Lex's reply to the User
+        */
         var body = JSON.parse(event.body)
-        var query = body.query
+        var query = body.Body
         if (!query){
-            callback(null, makeAPIResponse("Please enter a stop number"))
-            return
+            return callback(null, makeResponse("Please enter a stop number"))
         }
 
         var stopRequest = query.toLowerCase().replace(/ /g,'').replace("stop",'').replace("#",'');
-        if (/^\d+$/.test(stopRequest)) { // just looking up a bus number
+        if (/^\d+$/.test(stopRequest)) {
+            console.log("in bus test with request: ", stopRequest)
+            /* This looks like a simple bus number request */
             // TODO: need to distinguish between twilio and web app requests
             // becuase they will get results in different formats
-            getStopFromStopNumber(stopRequest)
-            .then((data) => callback(null, makeAPIResponse(data)))
+            return getStopFromStopNumber(stopRequest)
+            .then((data) => callback(null, makeResponse(JSON.stringify(data))))
             .catch((err) => callback(err))
-            return;
         }
-        else { // Not a simple stop request - send to Lex to determine intent
-            askLex(query)
+        else { /*   Not a simple stop request - send to Lex to determine intent
+                    Lex will send back an object with a 'message' string and
+                    a 'sessionAttibutes' object
+                    The repsonse needs to adhere to the lambda proxy integration
+                    equest format
+                */
+            return askLex(query)
             .then((data) => {
-                callback(data)
-            })
-        }
-
-    }
-
-
-
-
-
-    function makeLexAction(data) {
-        return {
-                "sessionAttributes": {"data": JSON.stringify(data.data)},
-                "dialogAction": {
-                    "type": "Close",
-                    "fulfillmentState": "Fulfilled",
-                    "message":{
-                        "contentType": "PlainText",
-                        "content": busDatatoString(data)
-                    },
+                if (event.resource === "/sms") {
+                    callback(null, makeResponse(data.message))
+                } else if (event.resource === "/find") {
+                    callback(null, makeResponse(JSON.stringify(data)))
                 }
-            }
+            })
+            .catch((err) => callback("bot error")) //TODO handle this
+        }
+    } else {
+        /* Not sure why we are here */
+        console.error(new Error("Received a request without body or bot"))
+        callback("Bad Request")
     }
-    function makeLexError(err) {
-        return {
+
+}
+function makeLexAction(data) {
+    return {
+            "sessionAttributes": {"data": JSON.stringify(data.data)},
             "dialogAction": {
                 "type": "Close",
                 "fulfillmentState": "Fulfilled",
                 "message":{
                     "contentType": "PlainText",
-                    "content": err.name + ": " + err.message
-                }
+                    "content": busDatatoString(data)
+                },
+            }
+        }
+}
+function makeLexError(err) {
+    return {
+        "dialogAction": {
+            "type": "Close",
+            "fulfillmentState": "Fulfilled",
+            "message":{
+                "contentType": "PlainText",
+                "content": err.name + ": " + err.message
             }
         }
     }
+}
 
-    function makeAPIResponse(data){
-        return {
-            statusCode: 200,
-            headers: {
-                "Access-Control-Allow-Origin" : "*", // Required for CORS support to work
-                "Access-Control-Allow-Credentials" : true // Required for cookies, authorization headers with HTTPS
-            },
-            body: JSON.stringify(data)
-        }
-    }
-
-    function busDatatoString(data){
-        var stops = data.data.stops;
-        return stops.reduce(function(prev, curr) {
-            return prev + '\n\n' + curr.number + " " + curr.name + " - " + curr.times[0] }, `* stop ${data.data.stopId} - ${data.data.stop} *`
-        )
-    }
-
-    function askLex(query) {
-        var lexruntime = new AWS.LexRuntime({ // This needs to be initialized here for test mocks to work
-            apiVersion: '2016-11-28',
-        })
-
-        var params = {
-            botAlias: LEX_BOT_ALIAS,
-            botName: LEX_BOT_NAME,
-            inputText: query.toString(),
-            userId: LEX_BOT_UID
-        }
-        return new Promise((resolve, reject) => {
-            lexruntime.postText(params, (err, data) => {
-                if (err) {
-                    console.error(err, err.stack)
-                    reject(err)
-                }
-                else resolve(data)
-            })
-        })
+function makeResponse(data) {
+    return  {
+    statusCode: 200,
+    headers: {
+        "Access-Control-Allow-Origin" : "*", // Required for CORS support to work
+        "Access-Control-Allow-Credentials" : true // Required for cookies, authorization headers with HTTPS
+    },
+    body: data
     }
 }
+
+function busDatatoString(data){
+    var stops = data.data.stops;
+    return stops.reduce(function(prev, curr) {
+        return prev + '\n\n' + curr.number + " " + curr.name + " - " + curr.times[0] }, `* stop ${data.data.stopId} - ${data.data.stop} *`
+    )
+}
+
+function askLex(query) {
+    var lexruntime = new AWS.LexRuntime({ // This needs to be initialized here for test mocks to work
+        apiVersion: '2016-11-28',
+    })
+    var params = {
+        botAlias: LEX_BOT_ALIAS,
+        botName: LEX_BOT_NAME,
+        inputText: query.toString(),
+        userId: LEX_BOT_UID
+    }
+    return new Promise((resolve, reject) => {
+        lexruntime.postText(params, (err, data) => {
+            if (err) {
+                console.error(err, err.stack)
+                reject(err)
+            }
+            else resolve(data)
+        })
+    })
+}
+
 
 
 

@@ -40,7 +40,12 @@ Resources:
       Timeout: 5
       Role: 'arn:aws:iam::086642646227:role/Run_Lex'
       Events:
-        GetResource:
+        TwilioEndpoint:
+          Type: Api
+          Properties:
+            Path: /sms
+            Method: Post
+        WebEndpoint:
           Type: Api
           Properties:
             Path: /find
