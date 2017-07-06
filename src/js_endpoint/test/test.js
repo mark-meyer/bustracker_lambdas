@@ -5,6 +5,7 @@ var nock = require('nock')
 var AWS = require('aws-sdk-mock');
 var fixtures = require('./fixtures')
 var config = require('../config')
+var stop_number_lookup = require('../stop_number_lookup')
 
 var {handler} = require("../index.js")
 describe('Responds to input from API', function(){
@@ -50,8 +51,8 @@ describe('Responds to input from API', function(){
 
 
 describe('Resonds to input of plain stop number', function(){
-    const sampleQuery = "1066"
-    const sampleAPIInput = fixtures.apiRequest(sampleQuery)
+   // const sampleQuery = "1066"
+   // const sampleAPIInput = fixtures.apiRequest(sampleQuery)
 
     it("Should respond to empty query", function(){
         return handler(fixtures.apiRequest(""), {}, (err, response) => {
@@ -59,12 +60,19 @@ describe('Resonds to input of plain stop number', function(){
         })
     })
 
-    it("Should bus bus data object from stop id", function(){
-        config.MUNI_URL
-        var muni = nock(MUNI_URL + '2124')
+    it("Should return bus data object from stop id", function(){
+        // Get Random Stop
+        var keys = Object.keys(stop_number_lookup)
+        var key = keys[ keys.length * Math.random() << 0]
+        var randStop =  stop_number_lookup[key];
+        var sampleAPIInput = fixtures.apiRequest(key)
+        var domain, path
+        [domain, path] = config.MUNI_URL.split(/(.*[^\/])(\/[^\/].*)/).filter((e) => e)
+
+        nock(domain).get(path + randStop).reply(200, fixtures.muniData);
         return handler(sampleAPIInput, {}, (err, response)=>{
-            console.log(response)
-            assert(true)
+            var stopId = response && JSON.parse(response.body).data.stopId
+            assert(stopId === key, "Did not return stop in Json response")
         })
     })
 

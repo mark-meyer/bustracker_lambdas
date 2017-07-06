@@ -49,13 +49,12 @@ exports.handler = (event, context, callback) => {
 
         var stopRequest = query.toLowerCase().replace(/ /g,'').replace("stop",'').replace("#",'');
         if (/^\d+$/.test(stopRequest)) {
-            console.log("in bus test with request: ", stopRequest)
             /* This looks like a simple bus number request */
             // TODO: need to distinguish between twilio and web app requests
             // becuase they will get results in different formats
             return getStopFromStopNumber(stopRequest)
             .then((data) => callback(null, makeResponse(JSON.stringify(data))))
-            .catch((err) => callback(err))
+            .catch((err) => callback(makeResponse("Sorry there was an error: " + err)))
         }
         else { /*   Not a simple stop request - send to Lex to determine intent
                     Lex will send back an object with a 'message' string and
