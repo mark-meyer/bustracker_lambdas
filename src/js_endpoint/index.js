@@ -54,7 +54,7 @@ exports.handler = (event, context, callback) => {
             // becuase they will get results in different formats
             return getStopFromStopNumber(stopRequest)
             .then((data) => callback(null, makeResponse(JSON.stringify(data))))
-            .catch((err) => callback(makeResponse("Sorry there was an error: " + err)))
+            .catch((err) => callback(null, makeResponse(JSON.stringify(err)))) // Don't throw error here - send user a nice error message
         }
         else { /*   Not a simple stop request - send to Lex to determine intent
                     Lex will send back an object with a 'message' string and

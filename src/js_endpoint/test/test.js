@@ -53,13 +53,12 @@ describe('Responds to input from API', function(){
 describe('Resonds to input of plain stop number', function(){
    // const sampleQuery = "1066"
    // const sampleAPIInput = fixtures.apiRequest(sampleQuery)
-
+  
     it("Should respond to empty query", function(){
         return handler(fixtures.apiRequest(""), {}, (err, response) => {
             assert(response.body.includes("Please enter"), "Did not respond properly to empty query")
         })
     })
-
     it("Should return bus data object from stop id", function(){
         // Get Random Stop
         var keys = Object.keys(stop_number_lookup)
@@ -71,8 +70,14 @@ describe('Resonds to input of plain stop number', function(){
 
         nock(domain).get(path + randStop).reply(200, fixtures.muniData);
         return handler(sampleAPIInput, {}, (err, response)=>{
-            var stopId = response && JSON.parse(response.body).data.stopId
-            assert(stopId === key, "Did not return stop in Json response")
+            var body = response && JSON.parse(response.body)
+            assert(body.data && body.data.stopId === key, "Did not return stop in Json response")
+        })
+    })
+    it("Should return an error message when stop doesn't exist", function(){
+        var sampleAPIInput = fixtures.apiRequest('10000')
+        return handler(sampleAPIInput, {}, (err, response)=>{
+            assert(response.body.includes('I couldn\'t find stop number 10000'), "Did not return correct error")
         })
     })
 
