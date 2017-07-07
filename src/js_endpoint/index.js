@@ -102,12 +102,12 @@ function makeLexError(err) {
 
 function makeResponse(data) {
     return  {
-    statusCode: 200,
-    headers: {
+    "statusCode": 200,
+    "headers": {
         "Access-Control-Allow-Origin" : "*", // Required for CORS support to work
         "Access-Control-Allow-Credentials" : true // Required for cookies, authorization headers with HTTPS
     },
-    body: data
+    "body": data
     }
 }
 
