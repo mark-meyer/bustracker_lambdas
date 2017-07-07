@@ -2,33 +2,26 @@ var http = require('http');
 var config = require('./config')
 var stop_number_lookup = require('./stop_number_lookup')
 var routeNamesToRouteNumbers = require('./routename_to_routenumber');
+var emojiRegex = require('emoji-regex');
 
 var AWS = require('aws-sdk');
 var LEX_BOT_ALIAS = "beta"
 var LEX_BOT_NAME = "BusTracker"
 var LEX_BOT_UID = "1229992" // not confidential — can be used for managing state
 
-// This works locally, but breaks when running on lambda
-// How to set role when testing locally?
+// This is needed to run locally
 let credentials = new AWS.SharedIniFileCredentials({profile: 'default'});
 if (credentials.accessKeyId) {
     AWS.config.credentials = credentials;
     AWS.config.update({region: 'us-east-1'});
 }
 
-// Requests can come from:
-// LEX: this will be a direct invocation and will contain `event.bot.name`
-// TWILIO: From SMS.
-// LEX and TWILIO should recieve a single string response
-// WEB API these are from front end app should recieve JSON data
-// Can LEX call a different Handler than the API Gateway?
-
 exports.handler = (event, context, callback) => {
     if (event.bot){
-        /* from LEX
-           Lex recieved a request like 'I am at stop 1066'
-           that we can't catch on our own. It should have
-           extracted the stop into a slot and passed it seperately.
+        /*  FROM LEX
+        |   Lex recieved a request like 'I am at stop 1066'
+        |   that we can't catch on our own. It should have
+        |   extracted the stop into a slot and passed it seperately.
         */
         var stopId = event.currentIntent.slots['stop']
         return getStopFromStopNumber(stopId)
@@ -36,39 +29,41 @@ exports.handler = (event, context, callback) => {
         .catch((err) => callback(null, makeLexError(err)) )
     }
     else if (event.body){
-        /*  From API Gateway
-            This could be a simple stop number, which we will respond directly to
-            Or it could be a query that we don't know how to handle, which
-            will be sent to Lex and we'll send Lex's reply to the User
-        */
+        /* Assume it's from API Gateway if the request has a body parameter */
         var body = JSON.parse(event.body)
-        var query = body.Body
+
+        /* Clean up input */
+        var firstLine = body.Body.split(/\r\n|\r|\n/, 1)[0].replace(/\t/g, " ");
+        const emoRegex = emojiRegex();
+        var query = firstLine.replace(emoRegex, '').trim()
+
         if (!query){
             return callback(null, makeResponse("Please enter a stop number"))
         }
 
-        var stopRequest = query.toLowerCase().replace(/ /g,'').replace("stop",'').replace("#",'');
+        /*
+        |   Intercept requests that simple numbers or stop + number and deal with them before
+        |   rather than passing them to Lex Bot
+        */
+         var stopRequest = query.toLowerCase().replace(/ /g,'').replace("stop",'').replace("#",'');
         if (/^\d+$/.test(stopRequest)) {
-            /* This looks like a simple bus number request */
-            // TODO: need to distinguish between twilio and web app requests
-            // becuase they will get results in different formats
             return getStopFromStopNumber(stopRequest)
-            .then((data) => callback(null, makeResponse(JSON.stringify(data))))
+            .then((data) => {
+                var returnValue = event.resource === "/find" ? JSON.stringify(data) : busDatatoString(data)
+                callback(null, makeResponse(returnValue))
+            })
             .catch((err) => callback(null, makeResponse(JSON.stringify(err, ["name", "message"])))) // Don't throw error here - send user a nice error message
         }
-        else { /*   Not a simple stop request - send to Lex to determine intent
-                    Lex will send back an object with a 'message' string and
-                    a 'sessionAttibutes' object
-                    The repsonse needs to adhere to the lambda proxy integration
-                    equest format
-                */
+        else {
+        /*
+            Not a simple stop request - send to Lex to determine intent
+            Lex will send back an object with a 'message' string and
+            a 'sessionAttibutes' object
+        */
             return askLex(query)
             .then((data) => {
-                if (event.resource === "/sms") {
-                    callback(null, makeResponse(data.message))
-                } else if (event.resource === "/find") {
-                    callback(null, makeResponse(JSON.stringify(data)))
-                }
+                var returnValue = event.resource === "/find" ? JSON.stringify(data) : data.message
+                callback(null, makeResponse(returnValue))
             })
             .catch((err) => callback("bot error")) //TODO handle this
         }

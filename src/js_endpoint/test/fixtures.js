@@ -26,7 +26,14 @@ exports.apiRequest = (query) => {
     }
 
 }
-
+exports.smsRequest = (query) => {
+    return {
+        resource: '/sms',
+        path: '/sms',
+        httpMethod: 'POST',
+        body: '{"Body": "' +query+'"}',
+    }
+}
 exports.lexReturn = {
     message: '* stop 1066 - FIREWEED and C STREET WNW *',
     sessionAttributes: { data: '{"stops":[{"route":"5TH AVENUE & F STREET WNW","stopId":"3507","distance":0.05691845245927328,"ll":"61.217605,-149.893845"},{"route":"CITY HALL","stopId":"1450","distance":0.0745025245603552,"ll":"61.216565,-149.894747"},{"route":"DOWNTOWN TRANSIT CENTER","stopId":"2051","distance":0.0810384451911698,"ll":"61.216553,-149.896764"},{"route":"5TH AVENUE & H STREET WNW","stopId":"1359","distance":0.10117887117697162,"ll":"61.217639,-149.898591"},{"route":"6TH AVENUE & H STREET WSW","stopId":"1735","distance":0.10384580227309781,"ll":"61.216522,-149.897789"}],"geocodedAddress":"W 5th Ave & G St, Anchorage, AK 99501, USA"}' }
