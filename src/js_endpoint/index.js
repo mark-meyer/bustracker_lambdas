@@ -3,6 +3,7 @@ var config = require('./config')
 var stop_number_lookup = require('./stop_number_lookup')
 var routeNamesToRouteNumbers = require('./routename_to_routenumber');
 var emojiRegex = require('emoji-regex');
+const queryString = require('query-string');
 
 var AWS = require('aws-sdk');
 var LEX_BOT_ALIAS = "beta"
@@ -29,9 +30,15 @@ exports.handler = (event, context, callback) => {
         .catch((err) => callback(null, makeLexError(err)) )
     }
     else if (event.body){
-        /* Assume it's from API Gateway if the request has a body parameter */
-        var body = JSON.parse(event.body)
+        /* Assume it's from API Gateway if the request has a body parameter
+            body will be encoded like a query string i.e. 'body=5th%20G%20Street'
+        */
 
+        var body = queryString.parse(event.body)
+
+        if (!body.Body){
+            return callback(null, makeResponse("Please enter a stop number"))
+        }
         /* Clean up input */
         var firstLine = body.Body.split(/\r\n|\r|\n/, 1)[0].replace(/\t/g, " ");
         const emoRegex = emojiRegex();
@@ -40,6 +47,7 @@ exports.handler = (event, context, callback) => {
         if (!query){
             return callback(null, makeResponse("Please enter a stop number"))
         }
+
 
         /*
         |   Intercept requests that simple numbers or stop + number and deal with them before

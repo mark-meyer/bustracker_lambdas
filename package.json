@@ -46,6 +46,7 @@
     "@turf/circle": "^4.3.0",
     "@turf/distance": "^4.3.0",
     "@turf/within": "^4.3.0",
-    "emoji-regex": "^6.4.3"
+    "emoji-regex": "^6.4.3",
+    "query-string": "^4.3.4"
   }
 }

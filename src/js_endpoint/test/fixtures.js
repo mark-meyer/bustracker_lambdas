@@ -22,7 +22,7 @@ exports.apiRequest = (query) => {
         resource: '/find',
         path: '/find',
         httpMethod: 'POST',
-        body: '{"Body": "' +query+'"}',
+        body: 'Body=' +query,
     }
 
 }
@@ -31,7 +31,7 @@ exports.smsRequest = (query) => {
         resource: '/sms',
         path: '/sms',
         httpMethod: 'POST',
-        body: '{"Body": "' +query+'"}',
+        body: 'ToCountry=US&ToState=AK&SmsMessageSid=SM47affbca22487338a5ab1f5081333dc9&NumMedia=0&ToCity=Juneau&FromZip=99577&SmsSid=SM47affbca22487338a5ab1f5081333dc9&FromState=AK&SmsStatus=received&FromCity=EAGLE+RIVER&Body=' +query + '&FromCountry=US&To=%2B19073121978&ToZip=&NumSegments=1&MessageSid=SM47affbca22487338a5ab1f5081333dc9&AccountSid=AC6f163c4d02441439ceccf8bf753a293e&From=%2B19078548077&ApiVersion=2010-04-01',
     }
 }
 exports.lexReturn = {
