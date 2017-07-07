@@ -36,6 +36,7 @@
     "file-loader": "^0.11.2",
     "json-loader": "^0.5.4",
     "mocha": "^3.4.2",
+    "nock": "^9.0.13",
     "rimraf": "^2.5.4",
     "sinon": "^2.3.6",
     "webpack": "^3.0.0",
@@ -44,6 +45,7 @@
   "dependencies": {
     "@turf/circle": "^4.3.0",
     "@turf/distance": "^4.3.0",
-    "@turf/within": "^4.3.0"
+    "@turf/within": "^4.3.0",
+    "emoji-regex": "^6.4.3"
   }
 }
