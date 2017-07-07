@@ -54,7 +54,7 @@ exports.handler = (event, context, callback) => {
             // becuase they will get results in different formats
             return getStopFromStopNumber(stopRequest)
             .then((data) => callback(null, makeResponse(JSON.stringify(data))))
-            .catch((err) => callback(null, makeResponse(JSON.stringify(err)))) // Don't throw error here - send user a nice error message
+            .catch((err) => callback(null, makeResponse(JSON.stringify(err, ["name", "message"])))) // Don't throw error here - send user a nice error message
         }
         else { /*   Not a simple stop request - send to Lex to determine intent
                     Lex will send back an object with a 'message' string and
@@ -164,7 +164,6 @@ function getStopFromStopNumber(stopId) {
     .then((muniBusData)=>{
         return {data: parseBusData(muniBusData.data, stopId), muniTime:muniBusData.asyncTime};
     })
-    .catch((err) => Promise.reject(new Error(err)))
 }
 
 
@@ -173,7 +172,9 @@ function requestBusData(busTrackerId) {
         var asyncTime =  Date.now()
         var request = http.get(config.MUNI_URL + busTrackerId, (response) => {
             if (response.statusCode < 200 || response.statusCode > 299) {
-                reject(new Error('Failed to load bustracker, status code: ' + response.statusCode));
+                var err = new Error('Failed to load bustracker, status code: ' + response.statusCode)
+                err.name = "Bustracker is down"
+                reject(err);
             }
             const body = [];
             response.on('data', (chunk) => body.push(chunk));
@@ -196,7 +197,8 @@ function parseBusData(body, stopId) {
     var stop = body.match(/<h1>(.*)<\/h1>/)
     if (stop == null) {
         var err = new Error('Unexpected result from Muni. Cannot parse returned value.');
-        console.error(err, {htmlBody: body, stopID: stopId});
+        err.name = "Bustracker is down"
+       // console.error(err, {htmlBody: body, stopID: stopId});
         throw err;
     }
     parsed.stop = stop[1];
