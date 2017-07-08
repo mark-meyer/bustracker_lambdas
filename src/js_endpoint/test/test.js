@@ -131,17 +131,23 @@ describe('Resonds to input of plain stop number', function(){
             assert(response.body.includes("Unexpected result from Muni."), "Did not return error with unparseable data")
         })
     })
-    it("Should return bus data object from stop id", function(){
+    it("Should return bus data string is sessionAttributes from stop id", function(){
         nock(domain).get(path + muniStopId).reply(200, fixtures.muniData);
         return handler(sampleAPIInput, {}, (err, response)=>{
-            var body =  JSON.parse(response.body)
-            assert(body.data && body.data.stopId === stopId, "Did not return stop in Json response")
+            var data =  JSON.parse(response.body.sessionAttributes.data)
+            assert(data.stopId === stopId, "Did not return stop in Json response")
         })
     })
     it("Should return bus info as single string to SMS from stop id", function(){
         nock(domain).get(path + muniStopId).reply(200, fixtures.muniData);
         return handler(sampleSMSInput, {}, (err, response)=>{
             assert(response.body.includes("stop " + stopId), "Did not return correct response")
+        })
+    })
+    it("Should include an intentName parameter on API Requests", function(){
+        nock(domain).get(path + muniStopId).reply(200, fixtures.muniData);
+        return handler(sampleAPIInput, {}, (err, response)=>{
+            assert(response.body.intentName === "stopNumber", "Did not return correct response")
         })
     })
     it("Should respond with holiday message when buses aren't running")

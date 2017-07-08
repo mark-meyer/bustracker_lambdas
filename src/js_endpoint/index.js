@@ -56,8 +56,10 @@ exports.handler = (event, context, callback) => {
          var stopRequest = query.toLowerCase().replace(/ /g,'').replace("stop",'').replace("#",'');
         if (/^\d+$/.test(stopRequest)) {
             return getStopFromStopNumber(stopRequest)
-            .then((data) => {
-                var returnValue = event.resource === "/find" ? JSON.stringify(data) : busDatatoString(data)
+            .then((res) => {
+                var returnValue = event.resource === "/find"
+                ? {"sessionAttributes" :{"data": JSON.stringify(res.data)}, "intentName": "stopNumber"} // Match Lex output to make frontend easier
+                : busDatatoString(res)
                 callback(null, makeResponse(returnValue))
             })
             .catch((err) => callback(null, makeResponse(JSON.stringify(err, ["name", "message"])))) // Don't throw error here - send user a nice error message
