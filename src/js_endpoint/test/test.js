@@ -47,12 +47,12 @@ describe('Responds to input from API', function(){
             assert((text === "I am at stop 1066"), "Did not properly clean input query ")
         })
     })
-    it("Should return stringified data from Lex back to user in the body property", function(){
+    it("Should return data from Lex back to user in the sessionArrtibutes property", function(){
         AWS.mock('LexRuntime', 'postText', (params, callback) => {
             callback(null, fixtures.lexReturn )
         })
         return handler(sampleAPIInput, {}, (err, response) => {
-            assert(JSON.stringify(fixtures.lexReturn) === response.body, "Returned data was not correct" )
+            assert.deepEqual(JSON.parse(fixtures.lexReturn.sessionAttributes.data), JSON.parse(response.body).sessionAttributes.data, "Returned data was not correct" )
         })
     })
 
@@ -131,10 +131,10 @@ describe('Resonds to input of plain stop number', function(){
             assert(response.body.includes("Unexpected result from Muni."), "Did not return error with unparseable data")
         })
     })
-    it("Should return bus data string is sessionAttributes from stop id", function(){
+    it("Should return bus data string in sessionAttributes from stop id", function(){
         nock(domain).get(path + muniStopId).reply(200, fixtures.muniData);
         return handler(sampleAPIInput, {}, (err, response)=>{
-            var data =  JSON.parse(response.body.sessionAttributes.data)
+            var data =  JSON.parse(response.body).sessionAttributes.data
             assert(data.stopId === stopId, "Did not return stop in Json response")
         })
     })
@@ -147,7 +147,7 @@ describe('Resonds to input of plain stop number', function(){
     it("Should include an intentName parameter on API Requests", function(){
         nock(domain).get(path + muniStopId).reply(200, fixtures.muniData);
         return handler(sampleAPIInput, {}, (err, response)=>{
-            assert(response.body.intentName === "stopNumber", "Did not return correct response")
+            assert(JSON.parse(response.body).intentName === "stopNumber", "Did not return correct response")
         })
     })
     it("Should respond with holiday message when buses aren't running")
