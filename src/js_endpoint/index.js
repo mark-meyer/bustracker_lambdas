@@ -53,7 +53,7 @@ exports.handler = (event, context, callback) => {
         |   Intercept requests that simple numbers or stop + number and deal with them before
         |   rather than passing them to Lex Bot
         */
-         var stopRequest = query.toLowerCase().replace(/ /g,'').replace("stop",'').replace("#",'');
+        var stopRequest = query.toLowerCase().replace(/ /g,'').replace("stop",'').replace("#",'');
         if (/^\d+$/.test(stopRequest)) {
             return getStopFromStopNumber(stopRequest)
             .then((res) => {
@@ -72,7 +72,7 @@ exports.handler = (event, context, callback) => {
         */
             return askLex(query)
             .then((data) => {
-                var returnValue = event.resource === "/find" ? JSON.stringify(data) : data.message
+                var returnValue = event.resource === "/find" ? data : data.message
                 callback(null, makeResponse(returnValue))
             })
             .catch((err) => callback("bot error")) //TODO handle this
