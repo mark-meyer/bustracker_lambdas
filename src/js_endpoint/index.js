@@ -21,7 +21,7 @@ exports.handler = (event, context, callback) => {
     if (event.bot){
         /*  FROM LEX
         |   Lex recieved a request like 'I am at stop 1066'
-        |   that we can't catch on our own. It should have
+        |   that we couldn't figure out on our own. It should have
         |   extracted the stop into a slot and passed it seperately.
         */
         var stopId = event.currentIntent.slots['stop']
@@ -30,8 +30,9 @@ exports.handler = (event, context, callback) => {
         .catch((err) => callback(null, makeLexError(err)) )
     }
     else if (event.body){
-        /* Assume it's from API Gateway if the request has a body parameter
-            body will be encoded like a query string i.e. 'body=5th%20G%20Street'
+        /*  FROM APIGATEWAY
+            With an event body it must be from the API Gateway via the web frontend or Twilio.
+            Body will be encoded like a query string i.e. 'body=5th%20G%20Street'
         */
 
         var body = queryString.parse(event.body)
@@ -48,17 +49,16 @@ exports.handler = (event, context, callback) => {
             return callback(null, makeResponse("Please enter a stop number"))
         }
 
-
-        /*
-        |   Intercept requests that simple numbers or stop + number and deal with them before
-        |   rather than passing them to Lex Bot
+        /*  HANDLE SIMPLE STOP NUMER REQUESTS BEFORE LEX
+            Intercept requests that are simple numbers such as "1066" or "stop 1066"
+            and deal with them rather than passing them to Lex bot.
         */
         var stopRequest = query.toLowerCase().replace(/ /g,'').replace("stop",'').replace("#",'');
         if (/^\d+$/.test(stopRequest)) {
             return getStopFromStopNumber(stopRequest)
             .then((res) => {
                 var returnValue = event.resource === "/find"
-                ? {"sessionAttributes" :{"data": JSON.stringify(res.data)}, "intentName": "stopNumber"} // Match Lex output to make frontend easier
+                ? JSON.stringify({"sessionAttributes" :{"data": res.data}, "intentName": "stopNumber"}) // Match Lex output to make frontend easier
                 : busDatatoString(res)
                 callback(null, makeResponse(returnValue))
             })
@@ -72,7 +72,10 @@ exports.handler = (event, context, callback) => {
         */
             return askLex(query)
             .then((data) => {
-                var returnValue = event.resource === "/find" ? data : data.message
+                var returnValue = event.resource === "/find"
+                ? JSON.stringify({"sessionAttributes" :{"data": JSON.parse(data.sessionAttributes.data)}, "intentName": data.intentName, "message": data.message })
+                : data.message
+                //var returnValue = event.resource === "/find" ? data : data.message
                 callback(null, makeResponse(returnValue))
             })
             .catch((err) => callback("bot error")) //TODO handle this
@@ -82,20 +85,24 @@ exports.handler = (event, context, callback) => {
         console.error(new Error("Received a request without body or bot"))
         callback("Bad Request")
     }
-
 }
+
+/*
+    When Lex directly invokes this lambda
+    this is the format it expects returned
+*/
 function makeLexAction(data) {
     return {
-            "sessionAttributes": {"data": JSON.stringify(data.data)},
-            "dialogAction": {
-                "type": "Close",
-                "fulfillmentState": "Fulfilled",
-                "message":{
-                    "contentType": "PlainText",
-                    "content": busDatatoString(data)
-                },
-            }
+        "sessionAttributes": {"data": JSON.stringify(data.data)},
+        "dialogAction": {
+            "type": "Close",
+            "fulfillmentState": "Fulfilled",
+            "message":{
+                "contentType": "PlainText",
+                "content": busDatatoString(data)
+            },
         }
+    }
 }
 function makeLexError(err) {
     return {
@@ -110,6 +117,10 @@ function makeLexError(err) {
     }
 }
 
+/*
+    When the lambda is inkoved throught the API
+    this is the return format it expects returned
+*/
 function makeResponse(data) {
     return  {
     "statusCode": 200,
@@ -118,10 +129,11 @@ function makeResponse(data) {
         "Access-Control-Allow-Origin" : "*", // Required for CORS support to work
         "Access-Control-Allow-Credentials" : true // Required for cookies, authorization headers with HTTPS
     },
-    "body": JSON.stringify(data)
+    "body": data
     }
 }
 
+/* Provide a single string for SMS based requests */
 function busDatatoString(data){
     var stops = data.data.stops;
     return stops.reduce(function(prev, curr) {
@@ -129,8 +141,9 @@ function busDatatoString(data){
     )
 }
 
+/* Call Lex bot with a request */
 function askLex(query) {
-    var lexruntime = new AWS.LexRuntime({ // This needs to be initialized here for test mocks to work
+    var lexruntime = new AWS.LexRuntime({ // This needs to be initialized inside the function for test mocks to work
         apiVersion: '2016-11-28',
     })
     var params = {
@@ -149,9 +162,6 @@ function askLex(query) {
         })
     })
 }
-
-
-
 
 
 /***
