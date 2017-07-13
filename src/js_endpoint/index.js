@@ -1,14 +1,14 @@
-var http = require('http');
-var config = require('./config')
-var stop_number_lookup = require('./stop_number_lookup')
-var routeNamesToRouteNumbers = require('./routename_to_routenumber');
-var emojiRegex = require('emoji-regex');
+const http = require('http');
+const config = require('./config')
+const stop_number_lookup = require('./stop_number_lookup')
+const routeNamesToRouteNumbers = require('./routename_to_routenumber');
+const emojiRegex = require('emoji-regex');
 const queryString = require('query-string');
 
-var AWS = require('aws-sdk');
-var LEX_BOT_ALIAS = "beta"
-var LEX_BOT_NAME = "BusTracker"
-var LEX_BOT_UID = "1229992" // not confidential — can be used for managing state
+const AWS = require('aws-sdk');
+const LEX_BOT_ALIAS = "beta"
+const LEX_BOT_NAME = "BusTracker"
+let LEX_BOT_UID = "1229992" // this is required and can be used for managing state, but we're not currently using it.
 
 // This is needed to run locally
 let credentials = new AWS.SharedIniFileCredentials({profile: 'default'});
@@ -19,31 +19,35 @@ if (credentials.accessKeyId) {
 
 exports.handler = (event, context, callback) => {
     if (event.bot){
+
         /*  FROM LEX
-        |   Lex recieved a request like 'I am at stop 1066'
-        |   that we couldn't figure out on our own. It should have
-        |   extracted the stop into a slot and passed it seperately.
+            Lex recieved a request like 'I am at stop 1066'
+            that we couldn't figure out on our own. It should have
+            extracted the stop into a slot and passed it seperately.
         */
-        var stopId = event.currentIntent.slots['stop']
+
+        let stopId = event.currentIntent.slots['stop']
         return getStopFromStopNumber(stopId)
-        .then((data) => callback(null, makeLexAction(data)))
-        .catch((err) => callback(null, makeLexError(err)) )
+            .then((data) => callback(null, makeLexAction(data)))
+            .catch((err) => callback(null, makeLexError(err)) )
     }
     else if (event.body){
+
         /*  FROM APIGATEWAY
             With an event body it must be from the API Gateway via the web frontend or Twilio.
             Body will be encoded like a query string i.e. 'body=5th%20G%20Street'
         */
 
-        var body = queryString.parse(event.body)
+        let body = queryString.parse(event.body)
 
         if (!body.Body){
             return callback(null, makeResponse("Please enter a stop number"))
         }
-        /* Clean up input */
-        var firstLine = body.Body.split(/\r\n|\r|\n/, 1)[0].replace(/\t/g, " ");
+
+        /* Clean input */
+        let firstLine = body.Body.split(/\r\n|\r|\n/, 1)[0].replace(/\t/g, " ");
         const emoRegex = emojiRegex();
-        var query = firstLine.replace(emoRegex, '').trim()
+        let query = firstLine.replace(emoRegex, '').trim()
 
         if (!query){
             return callback(null, makeResponse("Please enter a stop number"))
@@ -53,11 +57,12 @@ exports.handler = (event, context, callback) => {
             Intercept requests that are simple numbers such as "1066" or "stop 1066"
             and deal with them rather than passing them to Lex bot.
         */
+
         var stopRequest = query.toLowerCase().replace(/ /g,'').replace("stop",'').replace("#",'');
         if (/^\d+$/.test(stopRequest)) {
             return getStopFromStopNumber(stopRequest)
             .then((res) => {
-                var returnValue = event.resource === "/find"
+                let returnValue = event.resource === "/find"
                 ? JSON.stringify({"sessionAttributes" :{"data": res.data}, "intentName": "stopNumber"}) // Match Lex output to make frontend easier
                 : busDatatoString(res)
                 callback(null, makeResponse(returnValue))
@@ -65,24 +70,23 @@ exports.handler = (event, context, callback) => {
             .catch((err) => callback(null, makeResponse(JSON.stringify(err, ["name", "message"])))) // Don't throw error here - send user a nice error message
         }
         else {
-        /*
-            Not a simple stop request - send to Lex to determine intent
-            Lex will send back an object with a 'message' string and
-            a 'sessionAttibutes' object
-        */
+
+            /*  Not a simple stop request - send to Lex to determine intent
+                Lex will send back an object with a 'message' string,
+                a 'sessionAttibutes' object, and an 'intent'
+            */
             return askLex(query)
             .then((data) => {
                 let sessionData = data.sessionAttributes &&  data.sessionAttributes.data && JSON.parse(data.sessionAttributes.data);
                 let returnValue = event.resource === "/find"
-                ? JSON.stringify({"sessionAttributes" : {"data":sessionData}, "intentName": data.intentName, "message": data.message })
-                : data.message
-                //var returnValue = event.resource === "/find" ? data : data.message
+                    ? JSON.stringify({"sessionAttributes" : {"data":sessionData}, "intentName": data.intentName, "message": data.message })
+                    : data.message
                 callback(null, makeResponse(returnValue))
             })
             .catch((err) => callback(null, makeResponse("Sorry we had a chatbot error"))) //TODO handle this
         }
     } else {
-        /* Not sure why we are here */
+        /* This shouldn't ever happen */
         console.error(new Error("Received a request without body or bot"))
         callback("Bad Request")
     }
@@ -166,9 +170,9 @@ function askLex(query) {
 }
 
 
-/***
-*     Stop Number lookup functions
-***/
+/*
+    Stop Number lookup functions
+*/
 
 function getStopFromStopNumber(stopId) {
     var busTrackerId = stop_number_lookup[parseInt(stopId)];
@@ -183,7 +187,6 @@ function getStopFromStopNumber(stopId) {
         return {data: parseBusData(muniBusData.data, stopId), muniTime:muniBusData.asyncTime};
     })
 }
-
 
 function requestBusData(busTrackerId) {
     return new Promise((resolve, reject) => {
