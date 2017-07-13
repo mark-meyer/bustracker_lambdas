@@ -72,7 +72,7 @@ exports.handler = (event, context, callback) => {
         */
             return askLex(query)
             .then((data) => {
-                let sessionData = data.sessionAttributes.data && JSON.parse(data.sessionAttributes.data);
+                let sessionData = data.sessionAttributes &&  data.sessionAttributes.data && JSON.parse(data.sessionAttributes.data);
                 let returnValue = event.resource === "/find"
                 ? JSON.stringify({"sessionAttributes" : {"data":sessionData}, "intentName": data.intentName, "message": data.message })
                 : data.message
