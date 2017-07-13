@@ -151,7 +151,8 @@ function askLex(query) {
         botAlias: LEX_BOT_ALIAS,
         botName: LEX_BOT_NAME,
         inputText: query.toString(),
-        userId: LEX_BOT_UID
+        userId: LEX_BOT_UID,
+        sessionAttributes: {}
     }
     return new Promise((resolve, reject) => {
         lexruntime.postText(params, (err, data) => {
