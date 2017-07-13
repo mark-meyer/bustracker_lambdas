@@ -72,13 +72,14 @@ exports.handler = (event, context, callback) => {
         */
             return askLex(query)
             .then((data) => {
-                var returnValue = event.resource === "/find"
-                ? JSON.stringify({"sessionAttributes" :{"data": JSON.parse(data.sessionAttributes.data)}, "intentName": data.intentName, "message": data.message })
+                let sessionData = data.sessionAttributes.data && JSON.parse(data.sessionAttributes.data);
+                let returnValue = event.resource === "/find"
+                ? JSON.stringify({"sessionAttributes" : {"data":sessionData}, "intentName": data.intentName, "message": data.message })
                 : data.message
                 //var returnValue = event.resource === "/find" ? data : data.message
                 callback(null, makeResponse(returnValue))
             })
-            .catch((err) => callback("bot error")) //TODO handle this
+            .catch((err) => callback(null, makeResponse("Sorry we had a chatbot error"))) //TODO handle this
         }
     } else {
         /* Not sure why we are here */
